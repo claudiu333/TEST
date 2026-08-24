@@ -1,0 +1,800 @@
+<title>TaskBoard TV</title>
+<style id="page-style">
+  :root {
+    color-scheme: dark;
+    --bg: #0a0f1c;
+    --bg-grid: #0d1424;
+    --surface: #121a2e;
+    --surface-raised: #1a2540;
+    --border: #263252;
+    --border-soft: #1c2740;
+    --text: #eef1fb;
+    --text-muted: #8b96b8;
+    --text-faint: #5c6689;
+    --accent: #7c6cff;
+    --accent-soft: rgba(124, 108, 255, 0.16);
+    --accent-strong: #9a8dff;
+    --amber: #f5a524;
+    --amber-soft: rgba(245, 165, 36, 0.14);
+    --teal: #2fd6c3;
+    --teal-soft: rgba(47, 214, 195, 0.14);
+    --rose: #fb7189;
+    --rose-soft: rgba(251, 113, 137, 0.16);
+    --shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
+    --font-display: 'Manrope', 'Segoe UI', system-ui, sans-serif;
+    --font-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f3f4fb;
+    --bg-grid: #eceefa;
+    --surface: #ffffff;
+    --surface-raised: #f7f8fd;
+    --border: #dfe2f0;
+    --border-soft: #e8eaf5;
+    --text: #171c30;
+    --text-muted: #5b6488;
+    --text-faint: #8991b3;
+    --accent: #5b45e0;
+    --accent-soft: rgba(91, 69, 224, 0.1);
+    --accent-strong: #4933c9;
+    --amber: #b6650a;
+    --amber-soft: rgba(182, 101, 10, 0.1);
+    --teal: #0d8f7f;
+    --teal-soft: rgba(13, 143, 127, 0.1);
+    --rose: #d81b46;
+    --rose-soft: rgba(216, 27, 70, 0.1);
+    --shadow: 0 20px 50px -25px rgba(30, 34, 60, 0.35);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #f3f4fb;
+      --bg-grid: #eceefa;
+      --surface: #ffffff;
+      --surface-raised: #f7f8fd;
+      --border: #dfe2f0;
+      --border-soft: #e8eaf5;
+      --text: #171c30;
+      --text-muted: #5b6488;
+      --text-faint: #8991b3;
+      --accent: #5b45e0;
+      --accent-soft: rgba(91, 69, 224, 0.1);
+      --accent-strong: #4933c9;
+      --amber: #b6650a;
+      --amber-soft: rgba(182, 101, 10, 0.1);
+      --teal: #0d8f7f;
+      --teal-soft: rgba(13, 143, 127, 0.1);
+      --rose: #d81b46;
+      --rose-soft: rgba(216, 27, 70, 0.1);
+      --shadow: 0 20px 50px -25px rgba(30, 34, 60, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 0%, var(--accent-soft), transparent 45%),
+      linear-gradient(180deg, var(--bg-grid), var(--bg));
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  ::selection { background: var(--accent-soft); }
+  button { font-family: inherit; }
+  :focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+  .tabular { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+
+  .board {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(14px, 2vw, 22px);
+    padding: clamp(14px, 2.2vw, 28px);
+  }
+
+  /* ---------- Topbar ---------- */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .brand-mark {
+    width: 44px; height: 44px; border-radius: 12px; flex: none;
+    background: linear-gradient(140deg, var(--accent), var(--accent-strong));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px -8px var(--accent);
+  }
+  .brand-mark svg { width: 24px; height: 24px; }
+  .brand-text { min-width: 0; }
+  .board-name-row { display: flex; align-items: baseline; gap: 10px; }
+  .board-name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(20px, 2.4vw, 30px);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    background: transparent; border: none; color: var(--text);
+    padding: 2px 4px; border-radius: 6px; max-width: 60vw;
+  }
+  .board-name[contenteditable="true"] { cursor: text; background: var(--surface-raised); outline: 1px dashed var(--border); }
+  .board-subtitle { margin: 2px 0 0; color: var(--text-muted); font-size: 13px; }
+
+  .topbar-right { display: flex; align-items: center; gap: 18px; }
+  .live-chip {
+    display: flex; align-items: center; gap: 7px;
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em;
+    color: var(--teal); text-transform: uppercase;
+  }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 0 var(--teal-soft); animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 var(--teal-soft); }
+    70% { box-shadow: 0 0 0 8px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .clock-block { text-align: right; }
+  .clock-time { font-family: var(--font-mono); font-weight: 600; font-size: clamp(22px, 2.8vw, 32px); line-height: 1; letter-spacing: 0.01em; }
+  .clock-date { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: capitalize; }
+
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: border-color .15s, color .15s, background .15s;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--accent); }
+  .icon-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  /* ---------- Body grid ---------- */
+  .body-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: clamp(14px, 2vw, 22px);
+    align-items: start;
+  }
+  @media (max-width: 980px) {
+    .body-grid { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+  .panel + .panel { margin-top: 16px; }
+  .panel-title {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-display); font-weight: 700; font-size: 14px;
+    margin: 0 0 14px;
+  }
+  .panel-title .hint { font-weight: 500; font-size: 11px; color: var(--text-faint); }
+
+  /* Calendar */
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cal-month { font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+  .cal-nav { display: flex; gap: 6px; }
+  .cal-nav button {
+    width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface-raised); color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cal-nav button:hover { color: var(--text); border-color: var(--accent); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-dow { font-size: 10px; text-align: center; color: var(--text-faint); padding-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .cal-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 12px; border-radius: 7px; color: var(--text);
+  }
+  .cal-day.other { color: var(--text-faint); opacity: .45; }
+  .cal-day.today { background: var(--accent); color: #fff; font-weight: 700; }
+  .cal-day.has-vac:not(.today) { background: var(--rose-soft); color: var(--rose); }
+
+  /* Announcements */
+  .announce-list { display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto; }
+  .announce-item {
+    display: flex; gap: 8px; align-items: flex-start;
+    font-size: 12.5px; line-height: 1.5; color: var(--text-muted);
+    background: var(--surface-raised); border: 1px solid var(--border-soft);
+    border-radius: 10px; padding: 9px 10px;
+  }
+  .announce-item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-top: 6px; flex: none; }
+  .announce-remove {
+    margin-left: auto; border: none; background: none; color: var(--text-faint);
+    cursor: pointer; font-size: 14px; line-height: 1; padding: 2px;
+  }
+  .announce-remove:hover { color: var(--rose); }
+  .inline-add { display: flex; gap: 6px; margin-top: 12px; }
+  .inline-add input {
+    flex: 1; background: var(--surface-raised); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 12.5px; font-family: inherit;
+  }
+  .inline-add button {
+    border: none; background: var(--accent); color: #fff; border-radius: 8px;
+    padding: 0 12px; font-weight: 600; font-size: 12.5px; cursor: pointer;
+  }
+  .inline-add button:hover { background: var(--accent-strong); }
+
+  /* ---------- Columns ---------- */
+  .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #fff; border: none; border-radius: 999px;
+    padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer;
+  }
+  .filter-chip svg { width: 14px; height: 14px; }
+  .section-caption { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+  .section-caption .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 18px);
+  }
+  @media (max-width: 780px) { .columns { grid-template-columns: 1fr; } }
+
+  .column {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-top: 3px solid var(--col-color, var(--accent));
+    border-radius: 16px;
+    padding: 16px;
+    min-height: 220px;
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
+  }
+  .column.col-todo { --col-color: var(--accent); }
+  .column.col-doing { --col-color: var(--amber); }
+  .column.col-done { --col-color: var(--teal); }
+
+  .column-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .column-head h3 { margin: 0; font-family: var(--font-display); font-size: 16px; font-weight: 800; }
+  .column-count {
+    font-family: var(--font-mono); font-size: 12px; min-width: 24px; text-align: center;
+    background: var(--surface-raised); border: 1px solid var(--border); border-radius: 999px; padding: 3px 8px; color: var(--text-muted);
+  }
+
+  .task-list { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .empty-hint { color: var(--text-faint); font-size: 13px; padding: 18px 4px; text-align: center; }
+
+  .task-card {
+    background: var(--surface-raised); border: 1px solid var(--border);
+    border-radius: 12px; padding: 11px 12px; position: relative;
+  }
+  .task-title { font-size: 13.5px; font-weight: 600; line-height: 1.4; text-wrap: balance; padding-right: 20px; }
+  .task-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .task-assignee {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted);
+    background: var(--surface); border: 1px solid var(--border-soft); border-radius: 999px; padding: 3px 8px;
+  }
+  .task-due { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+  .task-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; }
+  .task-actions button {
+    width: 20px; height: 20px; border-radius: 6px; border: none; background: transparent;
+    color: var(--text-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;
+  }
+  .task-actions button:hover { background: var(--border-soft); color: var(--text); }
+  .task-actions button.danger:hover { color: var(--rose); }
+
+  .add-task-form { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .add-task-form input {
+    background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; color: var(--text); font-size: 12.5px; font-family: inherit;
+  }
+  .add-task-form .row { display: flex; gap: 6px; }
+  .add-task-form .row input { flex: 1; min-width: 0; }
+  .add-task-form button {
+    border: 1px dashed var(--border); background: transparent; color: var(--text-muted);
+    border-radius: 8px; padding: 8px; font-size: 12px; cursor: pointer; font-weight: 600;
+  }
+  .add-task-form button:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ---------- Ticker ---------- */
+  .ticker-bar {
+    background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px;
+    display: flex; align-items: stretch; overflow: hidden; box-shadow: var(--shadow);
+  }
+  .ticker-label {
+    flex: none; display: flex; align-items: center; gap: 8px;
+    background: var(--accent-soft); color: var(--accent-strong); font-weight: 700; font-size: 12.5px;
+    padding: 0 16px; white-space: nowrap; border-right: 1px solid var(--border-soft);
+  }
+  .ticker-viewport { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; }
+  .ticker-track {
+    display: flex; align-items: center; gap: 26px; white-space: nowrap;
+    padding: 12px 20px; animation: scroll-left var(--ticker-duration, 40s) linear infinite;
+  }
+  @keyframes scroll-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .ticker-item { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+  .ticker-item .name { font-weight: 700; }
+  .ticker-item .range { color: var(--text-muted); font-family: var(--font-mono); font-size: 12px; }
+  .ticker-item .active-badge {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+    background: var(--rose-soft); color: var(--rose); border-radius: 999px; padding: 2px 8px;
+  }
+  .ticker-sep { color: var(--text-faint); }
+  .ticker-edit { flex: none; display: flex; align-items: center; padding: 0 10px; border-left: 1px solid var(--border-soft); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track { animation: none; }
+    .ticker-viewport { overflow-x: auto; }
+    .live-dot { animation: none; }
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(6, 9, 20, .6); backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50;
+  }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border-soft); border-radius: 16px;
+    padding: 22px; width: min(520px, 100%); max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow);
+  }
+  .modal h2 { margin: 0 0 4px; font-family: var(--font-display); font-size: 18px; }
+  .modal .sub { margin: 0 0 16px; color: var(--text-muted); font-size: 13px; }
+  .vac-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-soft); }
+  .vac-row:last-of-type { border-bottom: none; }
+  .vac-row .vname { font-weight: 600; font-size: 13px; flex: 1; }
+  .vac-row .vrange { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-muted); }
+  .vac-row button { border: none; background: none; color: var(--text-faint); cursor: pointer; font-size: 14px; }
+  .vac-row button:hover { color: var(--rose); }
+  .vac-add { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+  .vac-add input { background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 12.5px; font-family: inherit; }
+  .vac-add input[type="text"] { flex: 1; min-width: 100px; }
+  .vac-add input[type="date"] { flex: 1; min-width: 120px; }
+  .vac-add button.submit { border: none; background: var(--accent); color: #fff; border-radius: 8px; padding: 0 14px; font-weight: 700; cursor: pointer; }
+  .modal-close { position: absolute; top: 14px; right: 14px; }
+  .modal { position: relative; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--surface-raised); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 18px; border-radius: 999px; font-size: 13px; box-shadow: var(--shadow);
+    z-index: 60; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+
+  .readonly-badge {
+    font-size: 11px; color: var(--text-faint); border: 1px solid var(--border); border-radius: 999px;
+    padding: 4px 10px;
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+
+<div id="app-root"></div>
+<script id="state-json" type="application/json">{"boardName":"TaskBoard TV","subtitle":"Actualizat automat, în timp real","tasks":[],"vacations":[{"id":"v1","name":"Mălina","start":"2026-08-14","end":"2026-08-30"},{"id":"v2","name":"Daria","start":"2026-08-17","end":"2026-08-28"},{"id":"v3","name":"Dragoș","start":"2026-08-23","end":"2026-08-27"},{"id":"v4","name":"Otilia","start":"2026-08-24","end":"2026-09-11"},{"id":"v5","name":"Alex","start":"2026-10-05","end":"2026-10-09"},{"id":"v6","name":"Mălina","start":"2026-10-12","end":"2026-10-25"},{"id":"v7","name":"Mircea","start":"2026-10-19","end":"2026-10-20"},{"id":"v8","name":"Alex","start":"2026-11-23","end":"2026-11-27"},{"id":"v9","name":"Amalia","start":"2026-11-26","end":"2026-11-27"},{"id":"v10","name":"Loredana","start":"2026-12-02","end":"2026-12-11"},{"id":"v11","name":"Vera","start":"2026-12-02","end":"2026-12-12"},{"id":"v12","name":"Mălina","start":"2026-12-11","end":"2026-12-27"},{"id":"v13","name":"Daria","start":"2026-12-23","end":"2026-12-24"},{"id":"v14","name":"Alex","start":"2026-12-28","end":"2026-12-28"},{"id":"v15","name":"Amalia","start":"2026-12-28","end":"2026-12-31"}],"announcements":[{"id":"a1","text":"Bun venit pe noul TaskBoard! Apasă pe creionul din colțul din dreapta sus ca să adaugi task-uri, concedii sau anunțuri."},{"id":"a2","text":"Ține acest tab deschis pe TV — se actualizează singur când cineva editează de pe telefon sau laptop."}]}</script>
+<script id="boot-script">
+(function () {
+  "use strict";
+
+  var DEFAULT_STATE = { boardName: "TaskBoard TV", subtitle: "Actualizat automat, în timp real", tasks: [], vacations: [], announcements: [] };
+  var COLUMNS = [
+    { key: "todo", label: "De făcut", cls: "col-todo" },
+    { key: "doing", label: "În lucru", cls: "col-doing" },
+    { key: "done", label: "Gata", cls: "col-done" }
+  ];
+  var DOW = ["L", "M", "Mi", "J", "V", "S", "D"];
+  var MONTHS = ["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"];
+  var MONTHS_SHORT = ["ian", "feb", "mar", "apr", "mai", "iun", "iul", "aug", "sept", "oct", "nov", "dec"];
+
+  var state = loadInitialState();
+  var view = { editMode: false, filterAssignee: "all", calYear: new Date().getFullYear(), calMonth: new Date().getMonth(), vacModalOpen: false, canEdit: true, artifactReady: false };
+  var artifactApi = null;
+
+  function loadInitialState() {
+    try {
+      var el = document.getElementById("state-json");
+      if (el && el.textContent.trim()) {
+        var parsed = JSON.parse(el.textContent);
+        return Object.assign({}, DEFAULT_STATE, parsed);
+      }
+    } catch (e) { /* fall through */ }
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+
+  function escapeHtml(str) {
+    return String(str == null ? "" : str).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function uid(prefix) { return prefix + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+  function todayISO() { var d = new Date(); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+  function fmtRange(startISO, endISO) {
+    var s = new Date(startISO + "T00:00:00"), e = new Date(endISO + "T00:00:00");
+    var sTxt = s.getDate() + " " + MONTHS_SHORT[s.getMonth()];
+    var eTxt = e.getDate() + " " + MONTHS_SHORT[e.getMonth()];
+    return startISO === endISO ? sTxt : sTxt + " – " + eTxt;
+  }
+  function isActiveNow(v) { var t = todayISO(); return v.start <= t && t <= v.end; }
+  function dateInRange(iso, v) { return v.start <= iso && iso <= v.end; }
+
+  /* ---------------- render ---------------- */
+  function render() {
+    var root = document.getElementById("app-root");
+    if (!root) return;
+    root.innerHTML = renderBoard();
+    wireEvents();
+    var themeRoot = document.documentElement;
+    if (!themeRoot.hasAttribute("data-theme")) { /* leave to system */ }
+  }
+
+  function renderBoard() {
+    return (
+      '<div class="board">' +
+      renderTopbar() +
+      '<div class="body-grid">' +
+      '<aside class="sidebar">' + renderCalendarPanel() + renderAnnouncePanel() + "</aside>" +
+      "<main>" + renderToolbar() + renderColumns() + "</main>" +
+      "</div>" +
+      renderTicker() +
+      "</div>" +
+      (view.vacModalOpen ? renderVacModal() : "") +
+      '<div class="toast" id="toast"></div>'
+    );
+  }
+
+  function renderTopbar() {
+    var now = new Date();
+    var timeStr = pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
+    var dateStr = now.toLocaleDateString("ro-RO", { weekday: "long", day: "numeric", month: "long" });
+    return (
+      '<header class="topbar">' +
+      '<div class="brand">' +
+      '<div class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="7" height="16" rx="1.5" fill="white" fill-opacity=".95"/><rect x="12" y="4" width="9" height="7" rx="1.5" fill="white" fill-opacity=".65"/><rect x="12" y="13" width="9" height="7" rx="1.5" fill="white" fill-opacity=".65"/></svg></div>' +
+      '<div class="brand-text">' +
+      '<div class="board-name-row"><h1 class="board-name" id="board-name" contenteditable="' + (view.editMode ? "true" : "false") + '" spellcheck="false">' + escapeHtml(state.boardName) + "</h1></div>" +
+      '<p class="board-subtitle">' + escapeHtml(state.subtitle) + "</p>" +
+      "</div></div>" +
+      '<div class="topbar-right">' +
+      '<div class="live-chip"><span class="live-dot"></span>Live</div>' +
+      '<div class="clock-block"><div class="clock-time tabular" id="clock-time">' + timeStr + '</div><div class="clock-date" id="clock-date">' + dateStr + "</div></div>" +
+      (view.canEdit
+        ? '<button class="icon-btn' + (view.editMode ? " active" : "") + '" id="btn-edit-toggle" aria-label="Comută modul editare" title="' + (view.editMode ? "Ieși din editare" : "Editează") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>'
+        : '<span class="readonly-badge">doar vizualizare</span>') +
+      "</div></header>"
+    );
+  }
+
+  function renderCalendarPanel() {
+    var y = view.calYear, m = view.calMonth;
+    var first = new Date(y, m, 1);
+    var startOffset = (first.getDay() + 6) % 7; // Monday-first
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var daysInPrev = new Date(y, m, 0).getDate();
+    var cells = [];
+    for (var i = 0; i < startOffset; i++) cells.push({ day: daysInPrev - startOffset + 1 + i, other: true, iso: null });
+    for (var d = 1; d <= daysInMonth; d++) cells.push({ day: d, other: false, iso: y + "-" + pad2(m + 1) + "-" + pad2(d) });
+    while (cells.length % 7 !== 0 || cells.length < 35) {
+      var nd = cells.length - (startOffset + daysInMonth) + 1;
+      cells.push({ day: nd, other: true, iso: null });
+      if (cells.length >= 42) break;
+    }
+    var todayIso = todayISO();
+    var cellsHtml = cells.map(function (c) {
+      var cls = "cal-day";
+      if (c.other) cls += " other";
+      if (c.iso === todayIso) cls += " today";
+      else if (c.iso && state.vacations.some(function (v) { return dateInRange(c.iso, v); })) cls += " has-vac";
+      return '<div class="' + cls + '">' + c.day + "</div>";
+    }).join("");
+    var dowHtml = DOW.map(function (d) { return '<div class="cal-dow">' + d + "</div>"; }).join("");
+    return (
+      '<section class="panel calendar-panel"><div class="cal-head"><div class="cal-month">' + MONTHS[m] + " " + y + '</div>' +
+      '<div class="cal-nav"><button id="cal-prev" aria-label="Luna anterioară">‹</button><button id="cal-next" aria-label="Luna următoare">›</button></div></div>' +
+      '<div class="cal-grid">' + dowHtml + cellsHtml + "</div></section>"
+    );
+  }
+
+  function renderAnnouncePanel() {
+    var items = state.announcements.map(function (a) {
+      return (
+        '<div class="announce-item"><span class="dot"></span><span>' + escapeHtml(a.text) + "</span>" +
+        (view.editMode ? '<button class="announce-remove" data-remove-announce="' + a.id + '" aria-label="Șterge">×</button>' : "") +
+        "</div>"
+      );
+    }).join("") || '<div class="empty-hint">Niciun anunț momentan.</div>';
+    return (
+      '<section class="panel announce-panel"><h2 class="panel-title">Anunțuri &amp; curiozități<span class="hint">' + state.announcements.length + " active</span></h2>" +
+      '<div class="announce-list">' + items + "</div>" +
+      (view.editMode
+        ? '<div class="inline-add"><input type="text" id="new-announce" placeholder="Scrie un anunț nou…" maxlength="180"><button id="btn-add-announce">Adaugă</button></div>'
+        : "") +
+      "</section>"
+    );
+  }
+
+  function assignees() {
+    var set = {};
+    state.tasks.forEach(function (t) { if (t.assignee) set[t.assignee] = true; });
+    return Object.keys(set).sort();
+  }
+
+  function renderToolbar() {
+    var list = assignees();
+    var label = view.filterAssignee === "all" ? "Toată echipa" : view.filterAssignee;
+    return (
+      '<div class="toolbar"><button class="filter-chip" id="btn-cycle-filter" title="Filtrează după persoană"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>' + escapeHtml(label) + (list.length ? " ▾" : "") + "</button>" +
+      '<div class="section-caption"><span class="dot"></span>' + state.tasks.length + " task-uri în total</div></div>"
+    );
+  }
+
+  function renderColumns() {
+    var filtered = state.tasks.filter(function (t) { return view.filterAssignee === "all" || t.assignee === view.filterAssignee; });
+    var html = COLUMNS.map(function (col) {
+      var tasks = filtered.filter(function (t) { return t.column === col.key; });
+      var cardsHtml = tasks.map(function (t) {
+        var idx = COLUMNS.findIndex(function (c) { return c.key === col.key; });
+        var prevBtn = idx > 0 && view.editMode ? '<button data-move="' + t.id + '" data-dir="-1" aria-label="Mută înapoi">‹</button>' : "";
+        var nextBtn = idx < COLUMNS.length - 1 && view.editMode ? '<button data-move="' + t.id + '" data-dir="1" aria-label="Mută înainte">›</button>' : "";
+        var delBtn = view.editMode ? '<button class="danger" data-remove-task="' + t.id + '" aria-label="Șterge task">×</button>' : "";
+        return (
+          '<div class="task-card"><div class="task-title">' + escapeHtml(t.title) + "</div>" +
+          '<div class="task-meta">' +
+          (t.assignee ? '<span class="task-assignee">👤 ' + escapeHtml(t.assignee) + "</span>" : "") +
+          (t.due ? '<span class="task-due tabular">' + escapeHtml(t.due) + "</span>" : "") +
+          "</div>" +
+          (view.editMode ? '<div class="task-actions">' + prevBtn + nextBtn + delBtn + "</div>" : "") +
+          "</div>"
+        );
+      }).join("") || '<div class="empty-hint">Fără task-uri</div>';
+      var addForm = view.editMode
+        ? '<form class="add-task-form" data-add-task="' + col.key + '">' +
+          '<input type="text" name="title" placeholder="Task nou…" maxlength="140" required>' +
+          '<div class="row"><input type="text" name="assignee" placeholder="Responsabil (opțional)" maxlength="40"><input type="text" name="due" placeholder="Termen, ex: 28 aug" maxlength="20"></div>' +
+          '<button type="submit">+ Adaugă în ' + escapeHtml(col.label) + "</button></form>"
+        : "";
+      return (
+        '<div class="column ' + col.cls + '"><div class="column-head"><h3>' + col.label + '</h3><span class="column-count tabular">' + tasks.length + "</span></div>" +
+        '<div class="task-list">' + cardsHtml + "</div>" + addForm + "</div>"
+      );
+    }).join("");
+    return '<div class="columns">' + html + "</div>";
+  }
+
+  function renderTicker() {
+    var sorted = state.vacations.slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+    var itemsHtml = sorted.map(function (v) {
+      return (
+        '<span class="ticker-item"><span class="name">' + escapeHtml(v.name) + '</span><span class="range tabular">' + fmtRange(v.start, v.end) + "</span>" +
+        (isActiveNow(v) ? '<span class="active-badge">în concediu acum</span>' : "") +
+        "</span>"
+      );
+    }).join('<span class="ticker-sep">•</span>');
+    var track = sorted.length
+      ? '<div class="ticker-track" style="--ticker-duration:' + Math.max(20, sorted.length * 6) + 's">' + itemsHtml + '<span class="ticker-sep">•</span>' + itemsHtml + "</div>"
+      : '<div class="ticker-track" style="animation:none"><span class="ticker-item">Nicio absență programată.</span></div>';
+    return (
+      '<footer class="ticker-bar"><div class="ticker-label">✈ Concedii echipă</div>' +
+      '<div class="ticker-viewport">' + track + "</div>" +
+      (view.editMode ? '<div class="ticker-edit"><button class="icon-btn" id="btn-open-vac" aria-label="Gestionează concediile" title="Gestionează concediile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg></button></div>' : "") +
+      "</footer>"
+    );
+  }
+
+  function renderVacModal() {
+    var sorted = state.vacations.slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+    var rows = sorted.map(function (v) {
+      return (
+        '<div class="vac-row"><span class="vname">' + escapeHtml(v.name) + '</span><span class="vrange">' + fmtRange(v.start, v.end) + "</span>" +
+        '<button data-remove-vac="' + v.id + '" aria-label="Șterge">×</button></div>'
+      );
+    }).join("") || '<div class="empty-hint">Nicio absență adăugată.</div>';
+    return (
+      '<div class="modal-backdrop" id="vac-backdrop"><div class="modal"><button class="icon-btn modal-close" id="btn-close-vac" aria-label="Închide">✕</button>' +
+      "<h2>Concedii echipă</h2><p class=\"sub\">Adaugă sau șterge perioade de absență.</p>" +
+      '<div id="vac-rows">' + rows + "</div>" +
+      '<form class="vac-add" id="vac-add-form">' +
+      '<input type="text" name="name" placeholder="Nume" required maxlength="40">' +
+      '<input type="date" name="start" required>' +
+      '<input type="date" name="end" required>' +
+      '<button type="submit" class="submit">Adaugă</button>' +
+      "</form></div></div>"
+    );
+  }
+
+  /* ---------------- events ---------------- */
+  function wireEvents() {
+    var editBtn = document.getElementById("btn-edit-toggle");
+    if (editBtn) editBtn.onclick = function () { view.editMode = !view.editMode; render(); };
+
+    var nameEl = document.getElementById("board-name");
+    if (nameEl && view.editMode) {
+      nameEl.onblur = function () {
+        var val = nameEl.textContent.trim() || DEFAULT_STATE.boardName;
+        if (val !== state.boardName) persist(Object.assign({}, state, { boardName: val }));
+      };
+      nameEl.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); nameEl.blur(); } };
+    }
+
+    var filterBtn = document.getElementById("btn-cycle-filter");
+    if (filterBtn) filterBtn.onclick = function () {
+      var list = ["all"].concat(assignees());
+      var idx = list.indexOf(view.filterAssignee);
+      view.filterAssignee = list[(idx + 1) % list.length];
+      render();
+    };
+
+    var calPrev = document.getElementById("cal-prev");
+    var calNext = document.getElementById("cal-next");
+    if (calPrev) calPrev.onclick = function () { view.calMonth--; if (view.calMonth < 0) { view.calMonth = 11; view.calYear--; } render(); };
+    if (calNext) calNext.onclick = function () { view.calMonth++; if (view.calMonth > 11) { view.calMonth = 0; view.calYear++; } render(); };
+
+    var addAnnounceBtn = document.getElementById("btn-add-announce");
+    if (addAnnounceBtn) addAnnounceBtn.onclick = function () {
+      var input = document.getElementById("new-announce");
+      var val = input.value.trim();
+      if (!val) return;
+      var next = Object.assign({}, state, { announcements: state.announcements.concat([{ id: uid("a"), text: val }]) });
+      persist(next);
+    };
+    document.querySelectorAll("[data-remove-announce]").forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute("data-remove-announce");
+        persist(Object.assign({}, state, { announcements: state.announcements.filter(function (a) { return a.id !== id; }) }));
+      };
+    });
+
+    document.querySelectorAll("[data-add-task]").forEach(function (form) {
+      form.onsubmit = function (e) {
+        e.preventDefault();
+        var col = form.getAttribute("data-add-task");
+        var fd = new FormData(form);
+        var title = (fd.get("title") || "").toString().trim();
+        if (!title) return;
+        var task = { id: uid("t"), title: title, assignee: (fd.get("assignee") || "").toString().trim(), due: (fd.get("due") || "").toString().trim(), column: col };
+        persist(Object.assign({}, state, { tasks: state.tasks.concat([task]) }));
+      };
+    });
+    document.querySelectorAll("[data-move]").forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute("data-move");
+        var dir = parseInt(btn.getAttribute("data-dir"), 10);
+        var keys = COLUMNS.map(function (c) { return c.key; });
+        var tasks = state.tasks.map(function (t) {
+          if (t.id !== id) return t;
+          var idx = keys.indexOf(t.column) + dir;
+          idx = Math.max(0, Math.min(keys.length - 1, idx));
+          return Object.assign({}, t, { column: keys[idx] });
+        });
+        persist(Object.assign({}, state, { tasks: tasks }));
+      };
+    });
+    document.querySelectorAll("[data-remove-task]").forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute("data-remove-task");
+        persist(Object.assign({}, state, { tasks: state.tasks.filter(function (t) { return t.id !== id; }) }));
+      };
+    });
+
+    var openVac = document.getElementById("btn-open-vac");
+    if (openVac) openVac.onclick = function () { view.vacModalOpen = true; render(); };
+    var closeVac = document.getElementById("btn-close-vac");
+    if (closeVac) closeVac.onclick = function () { view.vacModalOpen = false; render(); };
+    var backdrop = document.getElementById("vac-backdrop");
+    if (backdrop) backdrop.onclick = function (e) { if (e.target === backdrop) { view.vacModalOpen = false; render(); } };
+    document.querySelectorAll("[data-remove-vac]").forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute("data-remove-vac");
+        persist(Object.assign({}, state, { vacations: state.vacations.filter(function (v) { return v.id !== id; }) }));
+      };
+    });
+    var vacForm = document.getElementById("vac-add-form");
+    if (vacForm) vacForm.onsubmit = function (e) {
+      e.preventDefault();
+      var fd = new FormData(vacForm);
+      var name = (fd.get("name") || "").toString().trim();
+      var start = (fd.get("start") || "").toString();
+      var end = (fd.get("end") || "").toString() || start;
+      if (!name || !start) return;
+      if (end < start) { var t = end; end = start; start = t; }
+      persist(Object.assign({}, state, { vacations: state.vacations.concat([{ id: uid("v"), name: name, start: start, end: end }]) }));
+    };
+  }
+
+  /* ---------------- persistence ---------------- */
+  function buildDocument(nextState) {
+    var styleText = document.getElementById("page-style").textContent;
+    var bootText = document.getElementById("boot-script").textContent;
+    var stateJson = JSON.stringify(nextState).replace(/</g, "\\u003c");
+    return (
+      "<!doctype html>\n<html lang=\"ro\">\n<head>\n<meta charset=\"utf-8\">\n" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n" +
+      "<title>" + escapeHtml(nextState.boardName || "TaskBoard TV") + "</title>\n" +
+      "<style id=\"page-style\">" + styleText + "</style>\n" +
+      "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n" +
+      "<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n" +
+      "<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@500;700;800&display=swap\" rel=\"stylesheet\">\n" +
+      "</head>\n<body>\n" +
+      "<div id=\"app-root\"></div>\n" +
+      "<script id=\"state-json\" type=\"application/json\">" + stateJson + "<\/script>\n" +
+      "<script id=\"boot-script\">" + bootText + "<\/script>\n" +
+      "</body>\n</html>"
+    );
+  }
+
+  function showToast(msg) {
+    var t = document.getElementById("toast");
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(showToast._tm);
+    showToast._tm = setTimeout(function () { t.classList.remove("show"); }, 3200);
+  }
+
+  function persist(nextState) {
+    state = nextState;
+    render();
+    if (!artifactApi) {
+      showToast("Salvat doar local — capacitatea de salvare nu e disponibilă în această vizualizare.");
+      return;
+    }
+    artifactApi.publish(buildDocument(state)).catch(function (err) {
+      console.error("publish failed", err);
+      var code = err && err.code;
+      if (code === "not_granted" || code === "not_writer") {
+        view.canEdit = false;
+        view.editMode = false;
+        render();
+        showToast("Vizualizare doar — nu ai drepturi de editare pe acest board.");
+      } else if (code === "conflict") {
+        showToast("Altcineva a salvat chiar acum — se actualizează.");
+      } else {
+        showToast("Nu am putut salva modificarea. Încearcă din nou.");
+      }
+    });
+  }
+
+  /* ---------------- clock ---------------- */
+  function tickClock() {
+    var timeEl = document.getElementById("clock-time");
+    var dateEl = document.getElementById("clock-date");
+    if (!timeEl || !dateEl) return;
+    var now = new Date();
+    timeEl.textContent = pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
+    dateEl.textContent = now.toLocaleDateString("ro-RO", { weekday: "long", day: "numeric", month: "long" });
+  }
+
+  /* ---------------- init ---------------- */
+  function init() {
+    render();
+    setInterval(tickClock, 1000);
+    setInterval(function () {
+      if (!view.vacModalOpen) render();
+    }, 30 * 60 * 1000); // keep "acum" badges / calendar fresh across long TV sessions
+
+    if (window.claude && typeof window.claude.use === "function") {
+      window.claude.use("artifact").then(function (api) {
+        artifactApi = api;
+        view.artifactReady = !!api;
+        if (!api) showToast("Modul de salvare live nu e disponibil în această fereastră.");
+      }).catch(function () { artifactApi = null; });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
