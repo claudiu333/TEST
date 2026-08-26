@@ -429,22 +429,70 @@
   var DOW = ["L", "M", "Mi", "J", "V", "S", "D"];
   var MONTHS = ["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"];
   var MONTHS_SHORT = ["ian", "feb", "mar", "apr", "mai", "iun", "iul", "aug", "sept", "oct", "nov", "dec"];
+  var STORAGE_KEY = "taskboardTvState_v1";
+  var NEWS_CACHE_KEY = "taskboardTvNewsCache_v1";
+
+  // Surface runtime errors in the console instead of letting a single bad
+  // event handler silently wedge a TV screen that nobody is watching closely.
+  window.addEventListener("error", function (e) { console.error("TaskBoard TV runtime error:", e.error || e.message); });
+  window.addEventListener("unhandledrejection", function (e) { console.error("TaskBoard TV unhandled rejection:", e.reason); });
 
   var state = loadInitialState();
   var view = { editMode: false, filterAssignee: "all", calYear: new Date().getFullYear(), calMonth: new Date().getMonth(), vacModalOpen: false, teamModalOpen: false, canEdit: true, artifactReady: false };
   var artifactApi = null;
-  var newsItems = [];
+  var newsItems = loadCachedNews();
   var newsError = false;
 
+  function readStorage(key) {
+    try { return window.localStorage ? localStorage.getItem(key) : null; } catch (e) { return null; }
+  }
+  function writeStorage(key, value) {
+    try { if (window.localStorage) localStorage.setItem(key, value); } catch (e) { /* quota or unavailable — non-fatal */ }
+  }
+
+  // Two possible sources of truth: the state baked into this document at
+  // last publish, and whatever this browser last saved to localStorage
+  // (used when the Claude "artifact" publish API isn't available, e.g. when
+  // this board is hosted standalone). Both carry a _savedAt timestamp, so we
+  // always keep whichever one is actually newer instead of guessing.
   function loadInitialState() {
+    var embedded = JSON.parse(JSON.stringify(DEFAULT_STATE));
     try {
       var el = document.getElementById("state-json");
       if (el && el.textContent.trim()) {
-        var parsed = JSON.parse(el.textContent);
-        return Object.assign({}, DEFAULT_STATE, parsed);
+        embedded = Object.assign({}, DEFAULT_STATE, JSON.parse(el.textContent));
       }
-    } catch (e) { /* fall through */ }
-    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    } catch (e) { /* corrupt embedded state — fall back to defaults */ }
+
+    var local = null;
+    try {
+      var raw = readStorage(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.state) local = Object.assign({}, DEFAULT_STATE, parsed.state);
+      }
+    } catch (e) { /* corrupt local backup — ignore */ }
+
+    if (local && (local._savedAt || 0) > (embedded._savedAt || 0)) return local;
+    return embedded;
+  }
+
+  function saveLocalBackup(s) {
+    writeStorage(STORAGE_KEY, JSON.stringify({ state: s }));
+  }
+
+  function loadCachedNews() {
+    try {
+      var raw = readStorage(NEWS_CACHE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.items)) return parsed.items;
+      }
+    } catch (e) { /* ignore */ }
+    return [];
+  }
+  function saveCachedNews(items) {
+    writeStorage(NEWS_CACHE_KEY, JSON.stringify({ items: items, at: Date.now() }));
   }
 
   function escapeHtml(str) {
@@ -466,12 +514,14 @@
 
   /* ---------------- render ---------------- */
   function render() {
-    var root = document.getElementById("app-root");
-    if (!root) return;
-    root.innerHTML = renderBoard();
-    wireEvents();
-    var themeRoot = document.documentElement;
-    if (!themeRoot.hasAttribute("data-theme")) { /* leave to system */ }
+    try {
+      var root = document.getElementById("app-root");
+      if (!root) return;
+      root.innerHTML = renderBoard();
+      wireEvents();
+    } catch (err) {
+      console.error("render failed", err);
+    }
   }
 
   function renderBoard() {
@@ -678,17 +728,27 @@
   function fetchNews() {
     var rssUrl = "https://news.google.com/rss?hl=ro&gl=RO&ceid=RO:ro";
     var proxyUrl = "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(rssUrl);
-    fetch(proxyUrl).then(function (res) {
+    // Guard against the third-party proxy hanging indefinitely — without a
+    // timeout a stalled request just sits there until the next interval.
+    var controller = (typeof AbortController === "function") ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 10000) : null;
+    function clearTimer() { if (timer) clearTimeout(timer); }
+    fetch(proxyUrl, controller ? { signal: controller.signal } : undefined).then(function (res) {
+      clearTimer();
       if (!res.ok) throw new Error("bad status " + res.status);
       return res.json();
     }).then(function (data) {
       if (!data || !data.items || !data.items.length) throw new Error("empty payload");
       newsItems = data.items.slice(0, 14).map(function (it) { return (it.title || "").trim(); }).filter(Boolean);
       newsError = false;
+      saveCachedNews(newsItems);
       updateNewsTickerDom();
     }).catch(function (err) {
+      clearTimer();
       console.error("news fetch failed", err);
-      newsError = true;
+      // Keep showing the last cached headlines instead of flipping to
+      // "unavailable" on every transient failure of the free proxy.
+      newsError = !newsItems.length;
       updateNewsTickerDom();
     });
   }
@@ -867,10 +927,14 @@
   }
 
   function persist(nextState) {
-    state = nextState;
+    state = Object.assign({}, nextState, { _savedAt: Date.now() });
     render();
+    // Always keep a local backup, even when the artifact publish API is
+    // available — it's what lets a refresh recover the latest edit if
+    // publish fails or this board is ever opened outside Claude.
+    saveLocalBackup(state);
     if (!artifactApi) {
-      showToast("Salvat doar local — capacitatea de salvare nu e disponibilă în această vizualizare.");
+      showToast("Salvat local pe acest dispozitiv — fără sincronizare live cu alte dispozitive.");
       return;
     }
     artifactApi.publish(buildDocument(state)).catch(function (err) {
@@ -884,10 +948,25 @@
       } else if (code === "conflict") {
         showToast("Altcineva a salvat chiar acum — se actualizează.");
       } else {
-        showToast("Nu am putut salva modificarea. Încearcă din nou.");
+        showToast("Nu am putut salva pe server, dar modificarea rămâne salvată local pe acest dispozitiv.");
       }
     });
   }
+
+  // Same-browser, cross-tab sync: if another tab on this device saves a
+  // newer state (e.g. because the artifact publish API isn't available and
+  // both tabs are only writing to localStorage), pick it up without needing
+  // a manual refresh.
+  window.addEventListener("storage", function (e) {
+    if (e.key !== STORAGE_KEY || !e.newValue) return;
+    try {
+      var parsed = JSON.parse(e.newValue);
+      if (parsed && parsed.state && (parsed.state._savedAt || 0) > (state._savedAt || 0)) {
+        state = Object.assign({}, DEFAULT_STATE, parsed.state);
+        render();
+      }
+    } catch (err) { /* ignore malformed payload from other tab */ }
+  });
 
   /* ---------------- clock ---------------- */
   function tickClock() {
@@ -896,7 +975,20 @@
     if (!timeEl || !dateEl) return;
     var now = new Date();
     timeEl.textContent = pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
-    dateEl.textContent = now.toLocaleDateString("ro-RO", { weekday: "long", day: "numeric", month: "long" });
+    try {
+      dateEl.textContent = now.toLocaleDateString("ro-RO", { weekday: "long", day: "numeric", month: "long" });
+    } catch (e) {
+      // Some embedded/TV browsers ship without the ro-RO locale data —
+      // fall back to a plain numeric date instead of leaving it blank.
+      dateEl.textContent = pad2(now.getDate()) + "." + pad2(now.getMonth() + 1) + "." + now.getFullYear();
+    }
+  }
+
+  function isEditingNow() {
+    var active = document.activeElement;
+    if (!active) return false;
+    var tag = active.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || active.isContentEditable === true;
   }
 
   /* ---------------- init ---------------- */
@@ -904,7 +996,11 @@
     render();
     setInterval(tickClock, 1000);
     setInterval(function () {
-      if (!view.vacModalOpen && !view.teamModalOpen) render();
+      // Skip the periodic full re-render while a modal is open or someone
+      // is mid-keystroke — otherwise an in-progress, unsaved edit gets
+      // silently wiped out every 30 minutes.
+      if (view.vacModalOpen || view.teamModalOpen || isEditingNow()) return;
+      render();
     }, 30 * 60 * 1000); // keep "acum" badges / calendar fresh across long TV sessions
 
     if (typeof fetch === "function") {
@@ -916,7 +1012,7 @@
       window.claude.use("artifact").then(function (api) {
         artifactApi = api;
         view.artifactReady = !!api;
-        if (!api) showToast("Modul de salvare live nu e disponibil în această fereastră.");
+        if (!api) showToast("Modul de salvare live nu e disponibil în această fereastră — se folosește salvarea locală.");
       }).catch(function () { artifactApi = null; });
     }
   }
