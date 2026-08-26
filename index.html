@@ -121,7 +121,7 @@
   .board-name {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: clamp(20px, 2.4vw, 30px);
+    font-size: clamp(22px, 2.5vw, 36px);
     letter-spacing: -0.01em;
     text-wrap: balance;
     background: transparent; border: none; color: var(--text);
@@ -143,7 +143,7 @@
     100% { box-shadow: 0 0 0 0 transparent; }
   }
   .clock-block { text-align: right; }
-  .clock-time { font-family: var(--font-mono); font-weight: 600; font-size: clamp(22px, 2.8vw, 32px); line-height: 1; letter-spacing: 0.01em; }
+  .clock-time { font-family: var(--font-mono); font-weight: 600; font-size: clamp(24px, 2.9vw, 40px); line-height: 1; letter-spacing: 0.01em; }
   .clock-date { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: capitalize; }
 
   .icon-btn {
@@ -228,6 +228,16 @@
   }
   .inline-add button:hover { background: var(--accent-strong); }
 
+  /* Team chips */
+  .team-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .team-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface-raised); border: 1px solid var(--border-soft);
+    border-radius: 999px; padding: 5px 10px; font-size: 12px; color: var(--text);
+  }
+  .team-chip .remove-chip { border: none; background: none; color: var(--text-faint); cursor: pointer; font-size: 12px; line-height: 1; padding: 0; }
+  .team-chip .remove-chip:hover { color: var(--rose); }
+
   /* ---------- Columns ---------- */
   .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
   .filter-chip {
@@ -261,7 +271,7 @@
   .column.col-done { --col-color: var(--teal); }
 
   .column-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .column-head h3 { margin: 0; font-family: var(--font-display); font-size: 16px; font-weight: 800; }
+  .column-head h3 { margin: 0; font-family: var(--font-display); font-size: clamp(16px, 1.3vw, 21px); font-weight: 800; }
   .column-count {
     font-family: var(--font-mono); font-size: 12px; min-width: 24px; text-align: center;
     background: var(--surface-raised); border: 1px solid var(--border); border-radius: 999px; padding: 3px 8px; color: var(--text-muted);
@@ -274,7 +284,7 @@
     background: var(--surface-raised); border: 1px solid var(--border);
     border-radius: 12px; padding: 11px 12px; position: relative;
   }
-  .task-title { font-size: 13.5px; font-weight: 600; line-height: 1.4; text-wrap: balance; padding-right: 20px; }
+  .task-title { font-size: clamp(13.5px, 1.05vw, 17px); font-weight: 600; line-height: 1.4; text-wrap: balance; padding-right: 20px; }
   .task-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
   .task-assignee {
     display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted);
@@ -321,15 +331,39 @@
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
   }
-  .ticker-item { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+  .ticker-item { display: inline-flex; align-items: center; gap: 8px; font-size: clamp(13px, 1vw, 16px); }
   .ticker-item .name { font-weight: 700; }
-  .ticker-item .range { color: var(--text-muted); font-family: var(--font-mono); font-size: 12px; }
+  .ticker-item .range { color: var(--text-muted); font-family: var(--font-mono); font-size: clamp(12px, 0.9vw, 14px); }
   .ticker-item .active-badge {
     font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
     background: var(--rose-soft); color: var(--rose); border-radius: 999px; padding: 2px 8px;
   }
   .ticker-sep { color: var(--text-faint); }
   .ticker-edit { flex: none; display: flex; align-items: center; padding: 0 10px; border-left: 1px solid var(--border-soft); }
+  .ticker-stack { display: flex; flex-direction: column; gap: 10px; }
+  .news-ticker .ticker-label { background: var(--amber-soft); color: var(--amber); }
+
+  /* ---------- Large-screen (TV via HDMI) scaling ---------- */
+  @media (min-width: 1600px) {
+    .board { padding: 30px 40px; gap: 22px; }
+    .body-grid { grid-template-columns: 340px 1fr; gap: 24px; }
+    .panel { padding: 22px 24px; }
+    .panel-title { font-size: 16px; margin-bottom: 16px; }
+    .cal-month { font-size: 18px; }
+    .cal-day { font-size: 14px; }
+    .cal-dow { font-size: 11px; }
+    .announce-item { font-size: 14px; padding: 11px 12px; }
+    .column { padding: 20px 22px; min-height: 260px; }
+    .column-head { margin-bottom: 16px; }
+    .task-card { padding: 14px 16px; }
+    .task-assignee { font-size: 13px; padding: 4px 10px; }
+    .task-due { font-size: 12.5px; }
+    .ticker-bar { }
+    .ticker-label { font-size: 14px; padding: 0 20px; }
+    .ticker-track { padding: 14px 24px; gap: 32px; }
+    .filter-chip { font-size: 14px; padding: 10px 18px; }
+    .section-caption { font-size: 14px; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .ticker-track { animation: none; }
@@ -381,12 +415,12 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 
 <div id="app-root"></div>
-<script id="state-json" type="application/json">{"boardName":"TaskBoard TV","subtitle":"Actualizat automat, în timp real","tasks":[],"vacations":[{"id":"v1","name":"Mălina","start":"2026-08-14","end":"2026-08-30"},{"id":"v2","name":"Daria","start":"2026-08-17","end":"2026-08-28"},{"id":"v3","name":"Dragoș","start":"2026-08-23","end":"2026-08-27"},{"id":"v4","name":"Otilia","start":"2026-08-24","end":"2026-09-11"},{"id":"v5","name":"Alex","start":"2026-10-05","end":"2026-10-09"},{"id":"v6","name":"Mălina","start":"2026-10-12","end":"2026-10-25"},{"id":"v7","name":"Mircea","start":"2026-10-19","end":"2026-10-20"},{"id":"v8","name":"Alex","start":"2026-11-23","end":"2026-11-27"},{"id":"v9","name":"Amalia","start":"2026-11-26","end":"2026-11-27"},{"id":"v10","name":"Loredana","start":"2026-12-02","end":"2026-12-11"},{"id":"v11","name":"Vera","start":"2026-12-02","end":"2026-12-12"},{"id":"v12","name":"Mălina","start":"2026-12-11","end":"2026-12-27"},{"id":"v13","name":"Daria","start":"2026-12-23","end":"2026-12-24"},{"id":"v14","name":"Alex","start":"2026-12-28","end":"2026-12-28"},{"id":"v15","name":"Amalia","start":"2026-12-28","end":"2026-12-31"}],"announcements":[{"id":"a1","text":"Bun venit pe noul TaskBoard! Apasă pe creionul din colțul din dreapta sus ca să adaugi task-uri, concedii sau anunțuri."},{"id":"a2","text":"Ține acest tab deschis pe TV — se actualizează singur când cineva editează de pe telefon sau laptop."}]}</script>
+<script id="state-json" type="application/json">{"boardName":"TaskBoard TV","subtitle":"Actualizat automat, în timp real","tasks":[],"vacations":[{"id":"v1","name":"Mălina","start":"2026-08-14","end":"2026-08-30"},{"id":"v2","name":"Daria","start":"2026-08-17","end":"2026-08-28"},{"id":"v3","name":"Dragoș","start":"2026-08-23","end":"2026-08-27"},{"id":"v4","name":"Otilia","start":"2026-08-24","end":"2026-09-11"},{"id":"v5","name":"Alex","start":"2026-10-05","end":"2026-10-09"},{"id":"v6","name":"Mălina","start":"2026-10-12","end":"2026-10-25"},{"id":"v7","name":"Mircea","start":"2026-10-19","end":"2026-10-20"},{"id":"v8","name":"Alex","start":"2026-11-23","end":"2026-11-27"},{"id":"v9","name":"Amalia","start":"2026-11-26","end":"2026-11-27"},{"id":"v10","name":"Loredana","start":"2026-12-02","end":"2026-12-11"},{"id":"v11","name":"Vera","start":"2026-12-02","end":"2026-12-12"},{"id":"v12","name":"Mălina","start":"2026-12-11","end":"2026-12-27"},{"id":"v13","name":"Daria","start":"2026-12-23","end":"2026-12-24"},{"id":"v14","name":"Alex","start":"2026-12-28","end":"2026-12-28"},{"id":"v15","name":"Amalia","start":"2026-12-28","end":"2026-12-31"}],"announcements":[{"id":"a1","text":"Bun venit pe noul TaskBoard! Apasă pe creionul din colțul din dreapta sus ca să adaugi task-uri, concedii sau anunțuri."},{"id":"a2","text":"Ține acest tab deschis pe TV — se actualizează singur când cineva editează de pe telefon sau laptop."}],"teamMembers":["Claudiu","Alexandra","Dragoș","Cristina","Amalia","Alex","Raluca","Andra","Ștefan","Mălina","Doina","Mircea","Loredana","Otilia"]}</script>
 <script id="boot-script">
 (function () {
   "use strict";
 
-  var DEFAULT_STATE = { boardName: "TaskBoard TV", subtitle: "Actualizat automat, în timp real", tasks: [], vacations: [], announcements: [] };
+  var DEFAULT_STATE = { boardName: "TaskBoard TV", subtitle: "Actualizat automat, în timp real", tasks: [], vacations: [], announcements: [], teamMembers: [] };
   var COLUMNS = [
     { key: "todo", label: "De făcut", cls: "col-todo" },
     { key: "doing", label: "În lucru", cls: "col-doing" },
@@ -395,20 +429,70 @@
   var DOW = ["L", "M", "Mi", "J", "V", "S", "D"];
   var MONTHS = ["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"];
   var MONTHS_SHORT = ["ian", "feb", "mar", "apr", "mai", "iun", "iul", "aug", "sept", "oct", "nov", "dec"];
+  var STORAGE_KEY = "taskboardTvState_v1";
+  var NEWS_CACHE_KEY = "taskboardTvNewsCache_v1";
+
+  // Surface runtime errors in the console instead of letting a single bad
+  // event handler silently wedge a TV screen that nobody is watching closely.
+  window.addEventListener("error", function (e) { console.error("TaskBoard TV runtime error:", e.error || e.message); });
+  window.addEventListener("unhandledrejection", function (e) { console.error("TaskBoard TV unhandled rejection:", e.reason); });
 
   var state = loadInitialState();
-  var view = { editMode: false, filterAssignee: "all", calYear: new Date().getFullYear(), calMonth: new Date().getMonth(), vacModalOpen: false, canEdit: true, artifactReady: false };
+  var view = { editMode: false, filterAssignee: "all", calYear: new Date().getFullYear(), calMonth: new Date().getMonth(), vacModalOpen: false, teamModalOpen: false, canEdit: true, artifactReady: false };
   var artifactApi = null;
+  var newsItems = loadCachedNews();
+  var newsError = false;
 
+  function readStorage(key) {
+    try { return window.localStorage ? localStorage.getItem(key) : null; } catch (e) { return null; }
+  }
+  function writeStorage(key, value) {
+    try { if (window.localStorage) localStorage.setItem(key, value); } catch (e) { /* quota or unavailable — non-fatal */ }
+  }
+
+  // Two possible sources of truth: the state baked into this document at
+  // last publish, and whatever this browser last saved to localStorage
+  // (used when the Claude "artifact" publish API isn't available, e.g. when
+  // this board is hosted standalone). Both carry a _savedAt timestamp, so we
+  // always keep whichever one is actually newer instead of guessing.
   function loadInitialState() {
+    var embedded = JSON.parse(JSON.stringify(DEFAULT_STATE));
     try {
       var el = document.getElementById("state-json");
       if (el && el.textContent.trim()) {
-        var parsed = JSON.parse(el.textContent);
-        return Object.assign({}, DEFAULT_STATE, parsed);
+        embedded = Object.assign({}, DEFAULT_STATE, JSON.parse(el.textContent));
       }
-    } catch (e) { /* fall through */ }
-    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    } catch (e) { /* corrupt embedded state — fall back to defaults */ }
+
+    var local = null;
+    try {
+      var raw = readStorage(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.state) local = Object.assign({}, DEFAULT_STATE, parsed.state);
+      }
+    } catch (e) { /* corrupt local backup — ignore */ }
+
+    if (local && (local._savedAt || 0) > (embedded._savedAt || 0)) return local;
+    return embedded;
+  }
+
+  function saveLocalBackup(s) {
+    writeStorage(STORAGE_KEY, JSON.stringify({ state: s }));
+  }
+
+  function loadCachedNews() {
+    try {
+      var raw = readStorage(NEWS_CACHE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.items)) return parsed.items;
+      }
+    } catch (e) { /* ignore */ }
+    return [];
+  }
+  function saveCachedNews(items) {
+    writeStorage(NEWS_CACHE_KEY, JSON.stringify({ items: items, at: Date.now() }));
   }
 
   function escapeHtml(str) {
@@ -430,25 +514,29 @@
 
   /* ---------------- render ---------------- */
   function render() {
-    var root = document.getElementById("app-root");
-    if (!root) return;
-    root.innerHTML = renderBoard();
-    wireEvents();
-    var themeRoot = document.documentElement;
-    if (!themeRoot.hasAttribute("data-theme")) { /* leave to system */ }
+    try {
+      var root = document.getElementById("app-root");
+      if (!root) return;
+      root.innerHTML = renderBoard();
+      wireEvents();
+    } catch (err) {
+      console.error("render failed", err);
+    }
   }
 
   function renderBoard() {
     return (
       '<div class="board">' +
+      renderTeamDatalist() +
       renderTopbar() +
       '<div class="body-grid">' +
       '<aside class="sidebar">' + renderCalendarPanel() + renderAnnouncePanel() + "</aside>" +
       "<main>" + renderToolbar() + renderColumns() + "</main>" +
       "</div>" +
-      renderTicker() +
+      '<footer class="ticker-stack">' + renderNewsTicker() + renderTicker() + "</footer>" +
       "</div>" +
       (view.vacModalOpen ? renderVacModal() : "") +
+      (view.teamModalOpen ? renderTeamModal() : "") +
       '<div class="toast" id="toast"></div>'
     );
   }
@@ -523,6 +611,29 @@
     );
   }
 
+  function renderTeamModal() {
+    var members = state.teamMembers || [];
+    var chips = members.map(function (name) {
+      return (
+        '<span class="team-chip">' + escapeHtml(name) +
+        '<button class="remove-chip" data-remove-member="' + escapeHtml(name) + '" aria-label="Șterge ' + escapeHtml(name) + '">×</button>' +
+        "</span>"
+      );
+    }).join("") || '<div class="empty-hint">Niciun responsabil adăugat.</div>';
+    return (
+      '<div class="modal-backdrop" id="team-backdrop"><div class="modal"><button class="icon-btn modal-close" id="btn-close-team" aria-label="Închide">✕</button>' +
+      "<h2>Echipă</h2><p class=\"sub\">Responsabilii disponibili pentru task-uri și concedii. Nu apar pe ecranul TV.</p>" +
+      '<div class="team-chips">' + chips + "</div>" +
+      '<div class="inline-add" style="margin-top:14px"><input type="text" id="new-member" placeholder="Nume responsabil…" maxlength="40"><button id="btn-add-member">Adaugă</button></div>' +
+      "</div></div>"
+    );
+  }
+
+  function renderTeamDatalist() {
+    var members = state.teamMembers || [];
+    return '<datalist id="team-list">' + members.map(function (n) { return '<option value="' + escapeHtml(n) + '">'; }).join("") + "</datalist>";
+  }
+
   function assignees() {
     var set = {};
     state.tasks.forEach(function (t) { if (t.assignee) set[t.assignee] = true; });
@@ -533,7 +644,10 @@
     var list = assignees();
     var label = view.filterAssignee === "all" ? "Toată echipa" : view.filterAssignee;
     return (
-      '<div class="toolbar"><button class="filter-chip" id="btn-cycle-filter" title="Filtrează după persoană"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>' + escapeHtml(label) + (list.length ? " ▾" : "") + "</button>" +
+      '<div class="toolbar"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
+      '<button class="filter-chip" id="btn-cycle-filter" title="Filtrează după persoană"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>' + escapeHtml(label) + (list.length ? " ▾" : "") + "</button>" +
+      (view.editMode ? '<button class="icon-btn" id="btn-open-team" aria-label="Gestionează echipa" title="Gestionează echipa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/><circle cx="17" cy="8" r="2.6"/><path d="M15.5 13.7c2.6.4 4 2.2 4 5.3"/></svg></button>' : "") +
+      "</div>" +
       '<div class="section-caption"><span class="dot"></span>' + state.tasks.length + " task-uri în total</div></div>"
     );
   }
@@ -560,7 +674,7 @@
       var addForm = view.editMode
         ? '<form class="add-task-form" data-add-task="' + col.key + '">' +
           '<input type="text" name="title" placeholder="Task nou…" maxlength="140" required>' +
-          '<div class="row"><input type="text" name="assignee" placeholder="Responsabil (opțional)" maxlength="40"><input type="text" name="due" placeholder="Termen, ex: 28 aug" maxlength="20"></div>' +
+          '<div class="row"><input type="text" name="assignee" list="team-list" placeholder="Responsabil (opțional)" maxlength="40"><input type="text" name="due" placeholder="Termen, ex: 28 aug" maxlength="20"></div>' +
           '<button type="submit">+ Adaugă în ' + escapeHtml(col.label) + "</button></form>"
         : "";
       return (
@@ -584,11 +698,59 @@
       ? '<div class="ticker-track" style="--ticker-duration:' + Math.max(20, sorted.length * 6) + 's">' + itemsHtml + '<span class="ticker-sep">•</span>' + itemsHtml + "</div>"
       : '<div class="ticker-track" style="animation:none"><span class="ticker-item">Nicio absență programată.</span></div>';
     return (
-      '<footer class="ticker-bar"><div class="ticker-label">✈ Concedii echipă</div>' +
+      '<div class="ticker-bar"><div class="ticker-label">✈ Concedii echipă</div>' +
       '<div class="ticker-viewport">' + track + "</div>" +
       (view.editMode ? '<div class="ticker-edit"><button class="icon-btn" id="btn-open-vac" aria-label="Gestionează concediile" title="Gestionează concediile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg></button></div>' : "") +
-      "</footer>"
+      "</div>"
     );
+  }
+
+  function newsTickerInner() {
+    var items = newsItems.length ? newsItems : null;
+    var itemsHtml = items
+      ? items.map(function (t) { return '<span class="ticker-item"><span class="name">' + escapeHtml(t) + "</span></span>"; }).join('<span class="ticker-sep">•</span>')
+      : '<span class="ticker-item">' + (newsError ? "Știri indisponibile momentan." : "Se încarcă știrile…") + "</span>";
+    var track = items
+      ? '<div class="ticker-track" style="--ticker-duration:' + Math.max(30, items.length * 8) + 's">' + itemsHtml + '<span class="ticker-sep">•</span>' + itemsHtml + "</div>"
+      : '<div class="ticker-track" style="animation:none">' + itemsHtml + "</div>";
+    return '<div class="ticker-label">📰 Știri</div><div class="ticker-viewport">' + track + "</div>";
+  }
+
+  function renderNewsTicker() {
+    return '<div class="ticker-bar news-ticker" id="news-ticker">' + newsTickerInner() + "</div>";
+  }
+
+  function updateNewsTickerDom() {
+    var el = document.getElementById("news-ticker");
+    if (el) el.innerHTML = newsTickerInner();
+  }
+
+  function fetchNews() {
+    var rssUrl = "https://news.google.com/rss?hl=ro&gl=RO&ceid=RO:ro";
+    var proxyUrl = "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(rssUrl);
+    // Guard against the third-party proxy hanging indefinitely — without a
+    // timeout a stalled request just sits there until the next interval.
+    var controller = (typeof AbortController === "function") ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 10000) : null;
+    function clearTimer() { if (timer) clearTimeout(timer); }
+    fetch(proxyUrl, controller ? { signal: controller.signal } : undefined).then(function (res) {
+      clearTimer();
+      if (!res.ok) throw new Error("bad status " + res.status);
+      return res.json();
+    }).then(function (data) {
+      if (!data || !data.items || !data.items.length) throw new Error("empty payload");
+      newsItems = data.items.slice(0, 14).map(function (it) { return (it.title || "").trim(); }).filter(Boolean);
+      newsError = false;
+      saveCachedNews(newsItems);
+      updateNewsTickerDom();
+    }).catch(function (err) {
+      clearTimer();
+      console.error("news fetch failed", err);
+      // Keep showing the last cached headlines instead of flipping to
+      // "unavailable" on every transient failure of the free proxy.
+      newsError = !newsItems.length;
+      updateNewsTickerDom();
+    });
   }
 
   function renderVacModal() {
@@ -604,7 +766,7 @@
       "<h2>Concedii echipă</h2><p class=\"sub\">Adaugă sau șterge perioade de absență.</p>" +
       '<div id="vac-rows">' + rows + "</div>" +
       '<form class="vac-add" id="vac-add-form">' +
-      '<input type="text" name="name" placeholder="Nume" required maxlength="40">' +
+      '<input type="text" name="name" list="team-list" placeholder="Nume" required maxlength="40">' +
       '<input type="date" name="start" required>' +
       '<input type="date" name="end" required>' +
       '<button type="submit" class="submit">Adaugă</button>' +
@@ -654,6 +816,22 @@
       };
     });
 
+    var addMemberBtn = document.getElementById("btn-add-member");
+    if (addMemberBtn) addMemberBtn.onclick = function () {
+      var input = document.getElementById("new-member");
+      var val = input.value.trim();
+      if (!val) return;
+      var current = state.teamMembers || [];
+      if (current.indexOf(val) !== -1) { input.value = ""; return; }
+      persist(Object.assign({}, state, { teamMembers: current.concat([val]) }));
+    };
+    document.querySelectorAll("[data-remove-member]").forEach(function (btn) {
+      btn.onclick = function () {
+        var name = btn.getAttribute("data-remove-member");
+        persist(Object.assign({}, state, { teamMembers: (state.teamMembers || []).filter(function (n) { return n !== name; }) }));
+      };
+    });
+
     document.querySelectorAll("[data-add-task]").forEach(function (form) {
       form.onsubmit = function (e) {
         e.preventDefault();
@@ -692,6 +870,13 @@
     if (closeVac) closeVac.onclick = function () { view.vacModalOpen = false; render(); };
     var backdrop = document.getElementById("vac-backdrop");
     if (backdrop) backdrop.onclick = function (e) { if (e.target === backdrop) { view.vacModalOpen = false; render(); } };
+
+    var openTeam = document.getElementById("btn-open-team");
+    if (openTeam) openTeam.onclick = function () { view.teamModalOpen = true; render(); };
+    var closeTeam = document.getElementById("btn-close-team");
+    if (closeTeam) closeTeam.onclick = function () { view.teamModalOpen = false; render(); };
+    var teamBackdrop = document.getElementById("team-backdrop");
+    if (teamBackdrop) teamBackdrop.onclick = function (e) { if (e.target === teamBackdrop) { view.teamModalOpen = false; render(); } };
     document.querySelectorAll("[data-remove-vac]").forEach(function (btn) {
       btn.onclick = function () {
         var id = btn.getAttribute("data-remove-vac");
@@ -742,10 +927,14 @@
   }
 
   function persist(nextState) {
-    state = nextState;
+    state = Object.assign({}, nextState, { _savedAt: Date.now() });
     render();
+    // Always keep a local backup, even when the artifact publish API is
+    // available — it's what lets a refresh recover the latest edit if
+    // publish fails or this board is ever opened outside Claude.
+    saveLocalBackup(state);
     if (!artifactApi) {
-      showToast("Salvat doar local — capacitatea de salvare nu e disponibilă în această vizualizare.");
+      showToast("Salvat local pe acest dispozitiv — fără sincronizare live cu alte dispozitive.");
       return;
     }
     artifactApi.publish(buildDocument(state)).catch(function (err) {
@@ -759,10 +948,25 @@
       } else if (code === "conflict") {
         showToast("Altcineva a salvat chiar acum — se actualizează.");
       } else {
-        showToast("Nu am putut salva modificarea. Încearcă din nou.");
+        showToast("Nu am putut salva pe server, dar modificarea rămâne salvată local pe acest dispozitiv.");
       }
     });
   }
+
+  // Same-browser, cross-tab sync: if another tab on this device saves a
+  // newer state (e.g. because the artifact publish API isn't available and
+  // both tabs are only writing to localStorage), pick it up without needing
+  // a manual refresh.
+  window.addEventListener("storage", function (e) {
+    if (e.key !== STORAGE_KEY || !e.newValue) return;
+    try {
+      var parsed = JSON.parse(e.newValue);
+      if (parsed && parsed.state && (parsed.state._savedAt || 0) > (state._savedAt || 0)) {
+        state = Object.assign({}, DEFAULT_STATE, parsed.state);
+        render();
+      }
+    } catch (err) { /* ignore malformed payload from other tab */ }
+  });
 
   /* ---------------- clock ---------------- */
   function tickClock() {
@@ -771,7 +975,20 @@
     if (!timeEl || !dateEl) return;
     var now = new Date();
     timeEl.textContent = pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds());
-    dateEl.textContent = now.toLocaleDateString("ro-RO", { weekday: "long", day: "numeric", month: "long" });
+    try {
+      dateEl.textContent = now.toLocaleDateString("ro-RO", { weekday: "long", day: "numeric", month: "long" });
+    } catch (e) {
+      // Some embedded/TV browsers ship without the ro-RO locale data —
+      // fall back to a plain numeric date instead of leaving it blank.
+      dateEl.textContent = pad2(now.getDate()) + "." + pad2(now.getMonth() + 1) + "." + now.getFullYear();
+    }
+  }
+
+  function isEditingNow() {
+    var active = document.activeElement;
+    if (!active) return false;
+    var tag = active.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || active.isContentEditable === true;
   }
 
   /* ---------------- init ---------------- */
@@ -779,14 +996,23 @@
     render();
     setInterval(tickClock, 1000);
     setInterval(function () {
-      if (!view.vacModalOpen) render();
+      // Skip the periodic full re-render while a modal is open or someone
+      // is mid-keystroke — otherwise an in-progress, unsaved edit gets
+      // silently wiped out every 30 minutes.
+      if (view.vacModalOpen || view.teamModalOpen || isEditingNow()) return;
+      render();
     }, 30 * 60 * 1000); // keep "acum" badges / calendar fresh across long TV sessions
+
+    if (typeof fetch === "function") {
+      fetchNews();
+      setInterval(fetchNews, 5 * 60 * 1000); // refresh Google News every 5 minutes, runs permanently
+    }
 
     if (window.claude && typeof window.claude.use === "function") {
       window.claude.use("artifact").then(function (api) {
         artifactApi = api;
         view.artifactReady = !!api;
-        if (!api) showToast("Modul de salvare live nu e disponibil în această fereastră.");
+        if (!api) showToast("Modul de salvare live nu e disponibil în această fereastră — se folosește salvarea locală.");
       }).catch(function () { artifactApi = null; });
     }
   }
